@@ -11,7 +11,7 @@ const COMMAND = 'create-project';
 class CreateCommand {
   public args = {
     packageName: '',
-    scope: '@ptree',
+    scope: 'ptree',
     dir: 'packages',
     description: '',
     private: false,
@@ -183,7 +183,7 @@ npm install ${this._packageName}
 
   private get _packageName() {
     const { args } = this;
-    const scope = args.scope ? args.scope + '/' : '';
+    const scope = args.scope ? args.scope + '-' : '';
     return `${scope}${args.packageName}`;
   }
 }

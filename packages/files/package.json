@@ -1,5 +1,5 @@
 {
-  "name": "@ptree/files",
+  "name": "ptree-files",
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.cjs",
