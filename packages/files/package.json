@@ -1,0 +1,50 @@
+{
+  "name": "@ptree/files",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.cjs",
+  "source": "src/index.ts",
+  "bin": {
+    "ptree-files": "./bin.js"
+  },
+  "types": "lib",
+  "scripts": {
+    "test": "esrun __tests__/test.ts",
+    "build": "rollup -c rollup.config.ts",
+    "version": "git add -A package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/necolo/ptree.git"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/necolo/ptree/issues"
+  },
+  "keywords": [
+    "typescript"
+  ],
+  "author": "necolo <negko311@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/necolo/ptree/packages/files#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.77.2",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@ptree/core": "workspace:^1.0.0"
+  }
+}

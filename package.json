@@ -1,9 +1,10 @@
 {
   "name": "ptree",
   "version": "1.0.0",
-  "description": "Tree structor pretty printers",
+  "description": "Pretty tree printers",
   "main": "index.js",
   "scripts": {
+    "create": "pnpm --filter create-project run create",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Necolo Lv.C",
