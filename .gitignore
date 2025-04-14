@@ -4,3 +4,4 @@ build
 dist
 lib
 .vscode
+repomix-output.xml

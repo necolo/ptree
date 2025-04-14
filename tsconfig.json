@@ -14,7 +14,6 @@
     "importHelpers": true,
     "removeComments": false,
     "sourceMap": true,
-    "noImplicitUseStrict": true,
     "noImplicitReturns": true,
     "noImplicitAny": false,
     "noImplicitThis": true,

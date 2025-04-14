@@ -62,8 +62,8 @@ class CreateCommand {
         data: () => this._createIndex(),
       },
       {
-        filename: 'rollup.config.ts',
-        data: () => this._createRollupConfig(),
+        filename: 'tsup.config.ts',
+        data: () => this._createTsupConfig(),
       }
     ];
 
@@ -93,7 +93,7 @@ class CreateCommand {
       types: 'lib',
       scripts: {
         test: 'esrun __tests__/test.ts',
-        build: 'rollup -c rollup.config.ts',
+        build: 'tsup',
       },
       repository: {
         type: 'git',
@@ -115,10 +115,7 @@ class CreateCommand {
       license: 'MIT',
       homepage: `https://github.com/necolo/ptree/${args.dir}/${args.packageName}#readme`,
       devDependencies: {
-        "@rollup/plugin-commonjs": "^22.0.2",
-        "@rollup/plugin-node-resolve": "^13.3.0",
-        "rollup": "^2.77.2",
-        "rollup-plugin-typescript2": "^0.32.1",
+        "tsup": "^8.0.2",
         tslib: '^2.3.1',
         typescript: '^4.5.5',
       },
@@ -153,32 +150,16 @@ npm install ${this._packageName}
     return '// write your code here';
   }
 
-  private _createRollupConfig() {
-    return `import commonjs from "@rollup/plugin-commonjs";
-    import resolve from "@rollup/plugin-node-resolve";
-    import typescript from "rollup-plugin-typescript2";
-    import pkg from './package.json';
-    
-    export default {
-      input: pkg.source,
-      output: [
-        {
-          file: pkg.main,
-          format: 'cjs',
-        },
-        {
-          file: pkg.module,
-          format: 'esm',
-        },
-      ],
-      plugins: [
-        resolve(),
-        commonjs(),
-        typescript({
-          tsconfig: 'tsconfig.json',
-        }),
-      ],
-    }`;
+  private _createTsupConfig() {
+    return `import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  clean: true,
+  outDir: 'lib',
+});`;
   }
 
   private get _packageName() {

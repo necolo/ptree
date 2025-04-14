@@ -1,5 +1,5 @@
 
-# ptree 🌳
+# ptree
 
 A lightweight and flexible library for visualizing hierarchical data as pretty tree structures in the terminal
 
