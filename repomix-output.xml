@@ -1,0 +1,934 @@
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: pnpm-lock.yaml
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+packages/
+  core/
+    __tests__/
+      test.ts
+    src/
+      index.ts
+    package.json
+    README.md
+    rollup.config.ts
+    tsconfig.json
+  create-project/
+    src/
+      index.ts
+      utils.ts
+    package.json
+    tsconfig.json
+  files/
+    __tests__/
+      test.ts
+    src/
+      index.ts
+    bin.js
+    package.json
+    README.md
+    rollup.config.ts
+    tsconfig.json
+.gitignore
+package.json
+pnpm-workspace.yaml
+README.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="packages/core/__tests__/test.ts">
+import ptree from '../src';
+
+interface TestObject {
+  name: string;
+  children?: TestObject[];
+}
+
+console.log(ptree(
+  [
+    {
+      name: 'orange',
+      children: [
+        { name: 'orange-1', children: [ { name: 'orange-1-1' }] },
+        { name: 'orange-2' },
+        { name: 'orange-3', children: [ { name: 'orange-3-1' }] },
+      ],
+    },
+    {
+      name: 'pear',
+      children: [
+        { name: 'pear-1' },
+      ],
+    }
+  ] as TestObject[],
+  {
+    formatter: n => n.name,
+    getChildren: n => n.children,
+  }
+));
+
+console.log('\n');
+
+console.log(ptree(
+  {
+    name: 'fruits',
+    children: [
+      {
+        name: 'orange',
+        children: [
+          { name: 'orange-1', children: [ { name: 'orange-1-1' }] },
+          { name: 'orange-2' },
+          { name: 'orange-3', children: [ { name: 'orange-3-1' }] },
+        ],
+      },
+      {
+        name: 'pear',
+        children: [
+          { name: 'pear-1' },
+        ],
+      }
+    ],
+  } as TestObject,
+  {
+    formatter: n => n.name,
+    getChildren: n => n.children,
+  }
+));
+</file>
+
+<file path="packages/core/src/index.ts">
+interface Config<N> {
+  formatter: (node: N) => string; 
+  getChildren: (node: N) => N[] | null | undefined;
+}
+
+interface ConfigWithInit<N, I> extends Config<N> {
+  initializer?: (input: I) => N[] | N;
+}
+
+export function ptree<N>(input: N | N[], config: Config<N>): string;
+export function ptree<N, I>(input: I, config: ConfigWithInit<N, I>): string;
+export function ptree<N, I>(input, config) {
+  const { initializer, formatter, getChildren } = config;
+  const lines: string[] = [];
+
+  function iterator(nodes: N[] | undefined, prefix: string) {
+    if (!nodes?.length) {
+      return;
+    }
+
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const n = nodes[i];
+      lines.push(`${prefix}├─ ${formatter(n)}`);
+      iterator(getChildren(n), `${prefix}│  `);
+    }
+
+    const lastIndex = nodes.length - 1;
+    if (lastIndex >= 0) {
+      const n = nodes[lastIndex];
+      lines.push(`${prefix}└─ ${formatter(n)}`);
+      iterator(getChildren(n), `${prefix}   `);
+    }
+  }
+
+  const treeNodes = initializer?.(input) || input;
+  if (treeNodes instanceof Array) {
+    iterator(treeNodes, '');
+  } else {
+    lines.push(formatter(treeNodes));
+    iterator(getChildren(treeNodes), '');
+  }
+  return lines.join('\n');
+}
+
+export default ptree;
+</file>
+
+<file path="packages/core/README.md">
+# @ptree/core
+Convert anything to a pretty tree printing.
+
+## Install
+```
+npm install @ptree/core
+```
+
+## Usage
+
+```typescript
+ptree(inputObject, {
+  formatter: (node) => string,
+  getChildren: (node) => [nodes],
+});
+```
+
+## Example
+
+```
+ptree(
+  [
+    {
+      name: 'orange',
+      children: [
+        { name: 'orange-1', children: [ { name: 'orange-1-1' }] },
+        { name: 'orange-2' },
+        { name: 'orange-3', children: [ { name: 'orange-3-1' }] },
+      ],
+    },
+    {
+      name: 'pear',
+      children: [
+        { name: 'pear-1' },
+      ],
+    }
+  ],
+  {
+    formatter: n => n.name,
+    getChildren: n => n.children,
+  }
+)
+
+// print out:
+
+├─ orange
+│  ├─ orange-1
+│  │  └─ orange-1-1
+│  ├─ orange-2
+│  └─ orange-3
+│     └─ orange-3-1
+└─ pear
+   └─ pear-1
+```
+</file>
+
+<file path="packages/core/rollup.config.ts">
+import commonjs from "@rollup/plugin-commonjs";
+import resolve from "@rollup/plugin-node-resolve";
+import typescript from "rollup-plugin-typescript2";
+import pkg from './package.json';
+
+export default {
+  input: pkg.source,
+  output: [
+    {
+      file: pkg.main,
+      format: 'cjs',
+    },
+    {
+      file: pkg.module,
+      format: 'esm',
+    },
+  ],
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript({
+      tsconfig: 'tsconfig.json',
+    }),
+  ],
+}
+</file>
+
+<file path="packages/core/tsconfig.json">
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "./__tests__"
+  ]
+}
+</file>
+
+<file path="packages/create-project/src/utils.ts">
+export function correctType<T>(v: unknown, original: T): T {
+  if (original instanceof Array) {
+    if (v instanceof Array) {
+      return v as T;
+    }
+    return [v] as T;
+  }
+
+  if (typeof original === 'object') {
+    if (typeof v === 'object') {
+      return v as T;
+    }
+    return {} as T;
+  }
+  if (typeof original === 'string') {
+    return v as T;
+  }
+  if (typeof original === 'number') {
+    let num = Number(v);
+    if (isNaN(num)) {
+      num = 0;
+    }
+    return num as T;
+  }
+  if (typeof original === 'boolean') {
+    if (typeof v === 'boolean' || typeof v === 'number') {
+      return Boolean(v) as T;
+    }
+    return (v === 'true' || v === 'y' || v === 'yes') as T;
+  }
+  return v as T;
+}
+</file>
+
+<file path="packages/create-project/package.json">
+{
+  "name": "create-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "create": "esrun src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "necolo",
+  "license": "ISC",
+  "dependencies": {
+    "@digitak/esrun": "^3.2.9",
+    "minimist": "^1.2.6",
+    "tslib": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.2",
+    "@types/node": "^18.6.4"
+  }
+}
+</file>
+
+<file path="packages/create-project/tsconfig.json">
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "./src"
+  ]
+}
+</file>
+
+<file path="packages/files/__tests__/test.ts">
+import ptree from '../src';
+import path from 'path';
+
+console.log(ptree.files(path.join(__dirname, '../../../')));
+</file>
+
+<file path="packages/files/src/index.ts">
+import { ptree } from '@ptree/core';
+import fs from 'fs';
+
+export const printFiles = (dirPath: string) => {
+  return ptree(dirPath, {
+    formatter: pathname => {
+      const paths = pathname.split('/');
+      return paths[Math.max(0, paths.length - 1)];
+    },
+    getChildren: pathname => {
+      if (!fs.existsSync(pathname)) {
+        return null;
+      }
+      const stats = fs.lstatSync(pathname);
+      if (stats.isDirectory()) {
+        return fs.readdirSync(pathname).map(file => `${pathname}/${file}`);
+      }
+      return null;
+    },
+  });
+};
+
+export default {
+  files: printFiles,
+  core: ptree,
+};
+</file>
+
+<file path="packages/files/bin.js">
+#! /usr/bin/env node
+const process = require('process');
+const ptree = require('./lib/index.cjs');
+
+const params = process.argv.slice(2);
+const targetDir = params[0] || './';
+
+console.log(ptree.printFiles(targetDir));
+</file>
+
+<file path="packages/files/README.md">
+# @ptree/files
+Print your directory and files as a pretty tree
+
+## Use with npx
+
+```
+npx ptree-files [path]
+
+# print out:
+
+├─ README.md
+├─ __tests__
+│  └─ test.ts
+├─ bin.js
+├─ lib
+│  ├─ index.cjs
+│  └─ index.d.ts
+├─ package.json
+├─ rollup.config.ts
+├─ src
+│  └─ index.ts
+└─ tsconfig.json
+
+```
+
+## Install
+```
+npm install @ptree/files
+```
+
+## Usage
+
+```
+const ptree = require('./lib/index.cjs');
+const path = require('path');
+
+ptree.printFiles(path.join(__dirname, '..'));
+```
+</file>
+
+<file path="packages/files/rollup.config.ts">
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from "rollup-plugin-typescript2";
+import pkg from './package.json';
+
+export default {
+  input: pkg.source,
+  output: [
+    {
+      file: pkg.main,
+      format: 'cjs',
+    },
+  ],
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript({
+      tsconfig: 'tsconfig.json',
+    }),
+  ],
+}
+</file>
+
+<file path="packages/files/tsconfig.json">
+{
+  "extends": "../../tsconfig.json",
+  "target": "commonjs",
+  "module": "commonjs",
+  "compilerOptions": {
+    "outDir": "./lib"
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "./__tests__"
+  ]
+}
+</file>
+
+<file path="pnpm-workspace.yaml">
+packages:
+  - 'packages/*'
+</file>
+
+<file path="README.md">
+# @ptree/core
+Convert anything to a pretty tree printing.
+
+## Install
+```
+npm install @ptree/core
+```
+
+## Usage
+
+```typescript
+ptree(inputObject, {
+  formatter: (node) => string,
+  getChildren: (node) => [nodes],
+});
+```
+
+## Example
+
+```
+ptree(
+  [
+    {
+      name: 'orange',
+      children: [
+        { name: 'orange-1', children: [ { name: 'orange-1-1' }] },
+        { name: 'orange-2' },
+        { name: 'orange-3', children: [ { name: 'orange-3-1' }] },
+      ],
+    },
+    {
+      name: 'pear',
+      children: [
+        { name: 'pear-1' },
+      ],
+    }
+  ],
+  {
+    formatter: n => n.name,
+    getChildren: n => n.children,
+  }
+)
+
+// print out:
+
+├─ orange
+│  ├─ orange-1
+│  │  └─ orange-1-1
+│  ├─ orange-2
+│  └─ orange-3
+│     └─ orange-3-1
+└─ pear
+   └─ pear-1
+```
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "experimentalDecorators": true,
+    "isolatedModules": true,
+    "lib": ["esnext"],
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports" : true,
+    "allowJs": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "importHelpers": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "noImplicitUseStrict": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": false,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "outDir": "lib"
+  }
+}
+</file>
+
+<file path=".gitignore">
+.DS_Store
+node_modules
+build
+dist
+lib
+.vscode
+</file>
+
+<file path="package.json">
+{
+  "name": "ptree",
+  "version": "1.0.0",
+  "description": "Pretty tree printers",
+  "main": "index.js",
+  "scripts": {
+    "create": "pnpm --filter create-project run create",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Necolo Lv.C",
+  "license": "ISC"
+}
+</file>
+
+<file path="packages/core/package.json">
+{
+  "name": "@ptree/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.cjs",
+  "module": "lib/index.mjs",
+  "source": "src/index.ts",
+  "types": "lib",
+  "scripts": {
+    "test": "esrun __tests__/test.ts",
+    "build": "rollup -c rollup.config.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/necolo/ptree.git"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/necolo/ptree/issues"
+  },
+  "keywords": [
+    "typescript"
+  ],
+  "author": "necolo <negko311@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/necolo/ptree/packages/core#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.77.2",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.5"
+  }
+}
+</file>
+
+<file path="packages/create-project/src/index.ts">
+import path from 'path';
+import minimist from 'minimist';
+import fs from 'fs';
+import { correctType } from './utils';
+
+const ROOT_PATH = path.join(__dirname, '../../../');
+
+const VERSION = '1.0.0';
+const COMMAND = 'create-project';
+
+class CreateCommand {
+  public args = {
+    packageName: '',
+    scope: '@ptree',
+    dir: 'packages',
+    description: '',
+    private: false,
+  };
+
+  constructor(args: Partial<CreateCommand['args']>) {
+    const keys = Object.keys(args);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      const v = args[k];
+      if (v || v === false) {
+        this.args[k] = correctType(v, this.args[k]);
+      }
+    }
+  }
+
+  check() {
+    if (!this.args.packageName) {
+      throw new Error('');
+    }
+  }
+
+  run() {
+    this.check();
+    const { args } = this;
+    const targetDir = path.join(ROOT_PATH, args.dir, args.packageName);
+    const files = [
+      {
+        filename: 'package.json',
+        data: () => this._createPackageJson(),
+      },
+      {
+        filename: 'tsconfig.json',
+        data: () => this._createTsconfigJson(),
+      },
+      {
+        filename: 'README.md',
+        data: () => this._createReadme(),
+      },
+      {
+        dir: '__tests__',
+        filename: 'test.ts',
+        data: () => this._createTest(),
+      },
+      {
+        dir: 'src',
+        filename: 'index.ts',
+        data: () => this._createIndex(),
+      },
+      {
+        filename: 'rollup.config.ts',
+        data: () => this._createRollupConfig(),
+      }
+    ];
+
+    // create folder
+    fs.mkdirSync(targetDir);
+
+    // create files
+    for (const file of files) {
+      const dir = file.dir ? path.join(targetDir, file.dir) : '';
+      if (dir && !fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+      }
+      const filename = path.join(dir || targetDir, file.filename);
+      fs.appendFileSync(filename, file.data(), 'utf8');
+    }
+  }
+
+  private _createPackageJson() {
+    const { args } = this;
+    return JSON.stringify({
+      name: this._packageName,
+      version: '1.0.0',
+      description: args.description,
+      main: 'lib/index.cjs',
+      module: 'lib/index.mjs',
+      source: 'src/index.ts',
+      types: 'lib',
+      scripts: {
+        test: 'esrun __tests__/test.ts',
+        build: 'rollup -c rollup.config.ts',
+      },
+      repository: {
+        type: 'git',
+        url: 'git+https://github.com/necolo/ptree.git',
+      },
+      directories: {
+        lib: 'lib',
+      },
+      files: ['lib'],
+      publishConfig: {
+        registry: 'https://registry.npmjs.org',
+        access: 'public',
+      },
+      bugs: {
+        url: 'https://github.com/necolo/ptree/issues'
+      },
+      keywords: ['typescript', 'printer', 'tree'],
+      author: 'necolo <negko311@gmail.com>',
+      license: 'MIT',
+      homepage: `https://github.com/necolo/ptree/${args.dir}/${args.packageName}#readme`,
+      devDependencies: {
+        "@rollup/plugin-commonjs": "^22.0.2",
+        "@rollup/plugin-node-resolve": "^13.3.0",
+        "rollup": "^2.77.2",
+        "rollup-plugin-typescript2": "^0.32.1",
+        tslib: '^2.3.1',
+        typescript: '^4.5.5',
+      },
+    }, null, 2);
+  }
+
+  private _createTsconfigJson() {
+    const { args } = this;
+    return JSON.stringify({
+      extends: '../../tsconfig.json',
+      compilerOptions: {
+        'outDir': './lib'
+      },
+      include: ['./src'],
+      exclude: ['./__tests__'],
+    }, null, 2);
+  }
+
+  private _createReadme() {
+    return `# ${this._packageName}
+## Install
+\`\`\`
+npm install ${this._packageName}
+\`\`\``;
+  }
+
+  private _createTest() {
+    return `import ptree from '../src';`
+  }
+
+  private _createIndex() {
+    return '// write your code here';
+  }
+
+  private _createRollupConfig() {
+    return `import commonjs from "@rollup/plugin-commonjs";
+    import resolve from "@rollup/plugin-node-resolve";
+    import typescript from "rollup-plugin-typescript2";
+    import pkg from './package.json';
+    
+    export default {
+      input: pkg.source,
+      output: [
+        {
+          file: pkg.main,
+          format: 'cjs',
+        },
+        {
+          file: pkg.module,
+          format: 'esm',
+        },
+      ],
+      plugins: [
+        resolve(),
+        commonjs(),
+        typescript({
+          tsconfig: 'tsconfig.json',
+        }),
+      ],
+    }`;
+  }
+
+  private get _packageName() {
+    const { args } = this;
+    const scope = args.scope ? args.scope + '/' : '';
+    return `${scope}${args.packageName}`;
+  }
+}
+
+function run() {
+  const argv = minimist(process.argv.slice(2));
+  if (argv.h || argv.help) {
+    console.log(`Version ${VERSION}
+Usage:  ${COMMAND} [command] [package-name]
+        ${COMMAND} [-h | --help | v | --version]
+
+Support Arguments:
+    --scope             Scope name
+    --dir               Target directory
+    --private           Is the repository private or not
+    `)
+    return;
+  }
+
+  if (argv.v || argv.version) {
+    console.log(VERSION);
+    return;
+  }
+
+  const task = new CreateCommand({
+    ...argv,
+    packageName: argv._[0],
+  });
+
+  try {
+    task.run();
+  } catch (err: any) {
+    console.error(err.message);
+  }
+}
+
+run();
+</file>
+
+<file path="packages/files/package.json">
+{
+  "name": "ptree-files",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.cjs",
+  "source": "src/index.ts",
+  "bin": {
+    "ptree-files": "./bin.js"
+  },
+  "types": "lib",
+  "scripts": {
+    "test": "esrun __tests__/test.ts",
+    "build": "rollup -c rollup.config.ts",
+    "version": "git add -A package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/necolo/ptree.git"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/necolo/ptree/issues"
+  },
+  "keywords": [
+    "typescript"
+  ],
+  "author": "necolo <negko311@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/necolo/ptree/packages/files#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.77.2",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@ptree/core": "workspace:^1.0.0"
+  }
+}
+</file>
+
+</files>
